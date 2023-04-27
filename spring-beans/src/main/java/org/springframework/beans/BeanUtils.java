@@ -196,7 +196,8 @@ public abstract class BeanUtils {
 			if (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(ctor.getDeclaringClass())) {
 				return KotlinDelegate.instantiateClass(ctor, args);
 			}
-			else {
+
+			else {//担心某个类型对应的参数是null 所以需要看是否是基本数据类型 若是则赋予默认值
 				Class<?>[] parameterTypes = ctor.getParameterTypes();
 				Assert.isTrue(args.length <= parameterTypes.length, "Can't specify more arguments than constructor parameters");
 				Object[] argsWithDefaultValues = new Object[args.length];
@@ -209,6 +210,7 @@ public abstract class BeanUtils {
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
+				//创建对应的实例
 				return ctor.newInstance(argsWithDefaultValues);
 			}
 		}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="bfpb"  class="com.learn.no_5.beanFactoryPostProcessor.ReplaceObscenitiesBeanFactoryPostProcessor" lazy-init="false">
+		<property name="obscenities">
+			<set>
+				<value>金瓶梅</value>
+				<value>暴力街区</value>
+			</set>
+		</property>
+	</bean>
+
+	<bean id="book-01" class="com.learn.no_5.beanFactoryPostProcessor.Book" >
+		<property name="name" value="小猪佩奇环游世界"></property>
+		<property name="author" value="猪之迷"></property>
+	</bean>
+
+	<bean id="book-02" class="com.learn.no_5.beanFactoryPostProcessor.Book" >
+		<property name="name" value="金瓶梅"></property>
+		<property name="author" value="网络"></property>
+	</bean>
+
+	<bean id="book-03" class="com.learn.no_5.beanFactoryPostProcessor.Book" >
+		<property name="name" value="暴力街区"></property>
+		<property name="author" value="网络"></property>
+	</bean>
+
+</beans>

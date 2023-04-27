@@ -4,14 +4,11 @@
 	   xmlns:context="http://www.springframework.org/schema/context"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
-	<bean id="userService"  class="com.learn.service.impl.UserServiceImpl" lazy-init="false">
-	</bean>
-	<!--开启自动依赖注入 @Autowired...注解-->
-	<context:component-scan base-package="com.learn.*"/>
+	<bean id="testEvent"  class="com.learn.no_5.multiCaster.TestEvent" lazy-init="false">
+		<property name="msg" value="I comming !!!"/>
 
-	<bean class="com.learn.service.impl.UserServiceImpl" id="teacher" init-method="start" autowire="byName">
-		<property name="name" value="小猪"></property>
-		<property name="sex" value="0"></property>
 	</bean>
+
+
 
 </beans>

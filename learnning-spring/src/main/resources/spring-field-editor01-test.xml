@@ -4,14 +4,19 @@
 	   xmlns:context="http://www.springframework.org/schema/context"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
-	<bean id="userService"  class="com.learn.service.impl.UserServiceImpl" lazy-init="false">
+	<bean id="student"  class="com.learn.no_5.fieldEditor.Student" lazy-init="false">
+		<property name="name" value="zhangsan"/>
+		<property name="birthDay" value="2000-01-01"/>
+	</bean>
+	<!--自定义属性编辑器-->
+	<bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+		<property name="propertyEditorRegistrars">
+			<list>
+				<bean class="com.learn.no_5.fieldEditor.DateEditorRegister"/>
+			</list>
+		</property>
 	</bean>
 	<!--开启自动依赖注入 @Autowired...注解-->
 	<context:component-scan base-package="com.learn.*"/>
-
-	<bean class="com.learn.service.impl.UserServiceImpl" id="teacher" init-method="start" autowire="byName">
-		<property name="name" value="小猪"></property>
-		<property name="sex" value="0"></property>
-	</bean>
 
 </beans>

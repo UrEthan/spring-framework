@@ -83,7 +83,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 						throw new BeanInstantiationException(clazz, "No default constructor found", ex);
 					}
 				}
-			}
+			} //构造器创建实例
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
@@ -114,6 +114,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					return null;
 				});
 			}
+			//通过构造器和参数进行实例化
 			return BeanUtils.instantiateClass(ctor, args);
 		}
 		else {
