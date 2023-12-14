@@ -58,6 +58,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.PayloadApplicationEvent;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -567,14 +568,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 				//唤醒bf后置处理器 也就是调用前面注册进去的后置处理器
 				//查找并执行 bfpp类型的后置处理器  -- 加载bean实例之前执行
+				//add添加的BeanFactoryPostProcessor不会注册，只是添加到list
+				//TODO：ConfigurationClassPostProcessor是BeanFactoryPostProcessor的一个子类-->根据顶级注解完成bean的注册 register beanDefinition to map
+				// 默认情况下就是调用Config...Processor 作用：处理解析顶级注解 ---顶级注解：定义or注册bean使用的注解
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				//注册后处理器
+				//TODO: BeanPostProcessors是处理bean的（实例化完成、属性填充之后、进行初始化操作执行） BeanFactoryPostProcessors是处理关于BeanDefinition的
+				// 同样存在Spring内置的和程序员自己开发的Processor  这里注册是将BeanPostProcessors实例添加到beanPostProcessors中,以供对象创建时回调
+				// 所以流程是bdMap -> singletonObjets -> beanPostProcessors  AOP的BeanPostProcessor也是在此注册
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
+				//处理国际化相关操作 一般多用于web开发 一般不用可略过
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
@@ -582,11 +589,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses
-				//留给子类实现 这个方法内可硬编码 提供一些组件 比如说提供一些Listener.
+				//留给子类实现 这个方法内可硬编码 提供一些组件 比如说提供一些Listener. --SpringMVC Springboot都有拓展过
 				onRefresh();
 
 				// Check for listener beans and register them.
 				//注册通过bean的方式提供的listener 这些监听器最终都会注册到MultiCaster内。然后MC收到事件后会找到对应的Listener把事件广播给他们
+				//注册监听器 Spring事件模型相关内容  SpringCloud中...
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
@@ -768,10 +776,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
-		//传入bf 以及手动注册的后置处理器执行 invoke
+		//两个参数:当前的bean工厂、List<BeanFactoryPostProcessor>
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
-		// (e.g. through an @Bean method registered by ConfigurationClassPostProcessor)
+		// (e.g. through an @Bean method registered by ConfigurationClassPostProcessor) 进行bean织入操作
 		if (!NativeDetector.inNativeImage() && beanFactory.getTempClassLoader() == null && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
@@ -923,14 +931,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Initialize conversion service for this context.
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
-			beanFactory.setConversionService(
-					beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));
+			beanFactory.setConversionService(//类型转换器实例化后存入beanFactory的conversionService属性中
+					beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));//Spring明确了id和类型-双保险 必须命名CONVERSION_SERVICE_BEAN_NAME
 		}
 
 		// Register a default embedded value resolver if no BeanFactoryPostProcessor
 		// (such as a PropertySourcesPlaceholderConfigurer bean) registered any before:
 		// at this point, primarily for resolution in annotation attribute values.
-		if (!beanFactory.hasEmbeddedValueResolver()) {
+		if (!beanFactory.hasEmbeddedValueResolver()) { //替换占位符 --> 配置文件的值
+			//因为StringValueResolver是一个函数式接口 故用lambda表达式strVal -> getEnvironment().resolvePlaceholders(strVal)做参数 也可用匿名内部类
 			beanFactory.addEmbeddedValueResolver(strVal -> getEnvironment().resolvePlaceholders(strVal));
 		}
 
@@ -944,11 +953,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
-		//冻结配置信息 冻结bd信息冻结之后无法向bf内注册bd了
+		//冻结配置信息 冻结bd信息冻结之后无法向bf内注册bd了 --> 不让BeanFactoryPostProcessor修改beanDefinition
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		//预初始化非懒加载状态的单实例
+		//TODO 创建非延迟加载的单例对象:底层BeanFactory.getBean() -->singleton 预初始化非懒加载状态的单实例
 		beanFactory.preInstantiateSingletons();
 	}
 

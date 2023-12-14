@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+	<!--开启SpringAop  源码里搜索标签名:aspectj-autoproxy 就能找到对应的标签parse -->
+	<!--简单的搜索方法就是找到 BeanDefinitionParse 然后找对应解析起的实现类 一般每个标签都有自己对应的解析器-->
+	<aop:aspectj-autoproxy proxy-target-class="false"></aop:aspectj-autoproxy>
+
+	<bean id="aspectConfig" class="com.learn.no_7.demo01.AspectConfig" ></bean>
+	<bean id="test" class="com.learn.no_7.demo01.TestImpl" ></bean>
+
+</beans>

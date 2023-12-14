@@ -40,6 +40,8 @@ import org.springframework.util.StringUtils;
  * @since 28.12.2003
  * @see ClassLoader#getResourceAsStream(String)
  * @see Class#getResourceAsStream(String)
+ * Resource接口:目的是读取相关资源文件的内容 获得输入流(文件:xml properties --> 网络中的资源)
+ * 类路径资源解析
  */
 public class ClassPathResource extends AbstractFileResolvingResource {
 

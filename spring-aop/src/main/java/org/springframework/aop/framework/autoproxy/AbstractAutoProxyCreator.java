@@ -134,6 +134,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	private final Set<String> targetSourcedBeans = Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
+	/**为了避免将某个bean重复生成代理对象....
+	 * 1.普通路径
+	 * 2.bean 与 bean 形成依赖时 也会提前创建代理对象    三级缓存: ObjectFactory   二级缓存: 早期对象  三级缓存: 完整对象
+	 */
+
 	private final Map<Object, Object> earlyProxyReferences = new ConcurrentHashMap<>(16);
 
 	private final Map<Object, Class<?>> proxyTypes = new ConcurrentHashMap<>(16);
@@ -277,7 +282,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		return pvs;  // skip postProcessPropertyValues
 	}
 
-	/**
+	/** 参数一:Object bean ----->Spring容器完全初始化完毕后的实例对象
+	 *  参数二:beanName  ---> 无需多讲
 	 * Create a proxy with the configured interceptors if the bean is
 	 * identified as one to proxy by the subclass.
 	 * @see #getAdvicesAndAdvisorsForBean
@@ -285,6 +291,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
+			//cacheKey大部分情况下都是beanName
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
 				return wrapIfNecessary(bean, beanName, cacheKey);
@@ -306,6 +313,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @return the cache key for the given class and name
 	 */
 	protected Object getCacheKey(Class<?> beanClass, @Nullable String beanName) {
+		//beanName不为空 查看是否为FactoryBean 是 则添加 &
 		if (StringUtils.hasLength(beanName)) {
 			return (FactoryBean.class.isAssignableFrom(beanClass) ?
 					BeanFactory.FACTORY_BEAN_PREFIX + beanName : beanName);

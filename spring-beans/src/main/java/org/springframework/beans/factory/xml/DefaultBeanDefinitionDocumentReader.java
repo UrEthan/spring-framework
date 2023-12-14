@@ -323,9 +323,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
-		//解析完成之后返回bdHolder(主要保存bean标签上的别名信息)
+		// 解析所有bean标签的信息 解析完成之后返回bdHolder(主要保存bean标签上的别名信息)
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
-		if (bdHolder != null) {//若beanDefinition需要装饰在此进行处理，主要处理自定义属性
+		if (bdHolder != null) {//若beanDefinition需要装饰在此进行处理，主要处理bean标签内部存在的自定义标签 如果需要的话
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.

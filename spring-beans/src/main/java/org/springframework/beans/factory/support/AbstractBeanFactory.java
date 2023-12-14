@@ -256,6 +256,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		 * 若想要拿FactoryBean接口的实现类，使用getBean时传的beanName 要以 &开头
 		 * 若想要拿FactoryBean内部管理的对象，直接传beanName 无需 & 开头
 		 */
+		//默认情况下 name 和 beanName是同一个 别名也会被转换为 id值
 		String beanName = transformedBeanName(name);
 		Object beanInstance;
 
@@ -265,6 +266,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		//CASE1:假设成立 缓存中有对应的数据，此时缓存数据可能是普通单实例 也可能是FB 所以需要根据name进行判断并且返回响应 数据
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
+				// 打印日志: 输出当前拿到的 对象是 正在被创建的状态 or 完整体状态
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
 							"' that is not fully initialized yet - a consequence of a circular reference");
@@ -278,6 +280,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			 * 其实，你从IOC容器中拿到的对象有可能是普通单实例 也有可能是FactoryBean实例 若为FB则还需进行处理 主要看name带&还是不带&
 			 * 带&说明这次getBean想拿FactoryBean实例 否则是要拿FB内部管理的实例
 			 */
+			//若sharedInstance为<bean id="fb" class="xxx.xxx.xxxFactoryBean"/> 则需要进一步处理,因为我们需要的是fb创建的对象而不是fb实例
 			beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 		//CASE2: 缓存中没有我们需要的数据，需要自己去创建
@@ -296,7 +299,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 			// Check if bean definition exists in this factory.
-			BeanFactory parentBeanFactory = getParentBeanFactory();
+			BeanFactory parentBeanFactory = getParentBeanFactory(); //解决父子容器问题
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
 				String nameToLookup = originalBeanName(name);
@@ -319,6 +322,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 
 			if (!typeCheckOnly) {
+				//标记这个bean是需要创建对象而不是类型检查 typeCheckOnly若为true 只会做类型检查不会创建bean
 				markBeanAsCreated(beanName);
 			}
 
@@ -370,6 +374,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				//CASE-singleton
 				if (mbd.isSingleton()) {/**getSingleton方法 传两个参数 beanName以及匿名内部类--参数的实现即内部类createBean方法*/
 				//第二个getSingleton方法 这个方法更倾向于创建实例并返回
+					//执行流程：第一步调用getSingleton 里面两个参数，第二个参数是匿名内部类：可以理解为实现了ObjectFactory<?>中getObject方法的一个类
+					//当执行这个匿名内部类的getObject方法则会触发调用其实现createBean方法
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							return createBean(beanName, mbd, args);

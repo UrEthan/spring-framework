@@ -2,16 +2,39 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xmlns:context="http://www.springframework.org/schema/context"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+	   xmlns:zhu="http://www.ethan.com/schema/user"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/context
+	   https://www.springframework.org/schema/context/spring-context.xsd
+	   http://www.ethan.com/schema/user
+       http://www.ethan.com/schema/user.xsd">
 
-	<bean id="userService"  class="com.learn.service.impl.UserServiceImpl" lazy-init="false">
-	</bean>
+	<bean id="userService"  class="com.learn.service.impl.UserServiceImpl" lazy-init="false"/>
+	<bean  class="com.learn.service.impl.UserServiceImpl"/>
+	<bean id="userService1"  class="com.learn.service.impl.UserServiceImpl" lazy-init="false"/>
 	<!--开启自动依赖注入 @Autowired...注解-->
-	<context:component-scan base-package="com.learn.*"/>
+	<!--<context:component-scan base-package="com.learn.*"/>-->
 
-	<bean class="com.learn.service.impl.UserServiceImpl" id="teacher" init-method="start" autowire="byName">
+	<bean id="user" class="com.learn.User">
+		<property name="id" value="user"/>
+		<property name="name" value="zhangfeilong"/>
+		<property name="password" value="88888888"/>
+		<property name="house" ref="house"/>
+	</bean>
+
+	<bean id="house" class="com.learn.House">
+		<property name="price" value="12345"/>
+	</bean>
+
+	<bean id="userFactoryBean" class="com.learn.UserFactoryBean"/>
+
+	<!--自定义标签 通过xmlns:zhu为key在spring.schemas里面找到user.xsd约束 -->
+	<zhu:user id="z" name="zhuanning" password="12121212212"/>
+
+	<!--<bean class="com.learn.service.impl.UserServiceImpl" id="teacher" init-method="start" autowire="byName">
 		<property name="name" value="小猪"></property>
 		<property name="sex" value="0"></property>
-	</bean>
+	</bean>-->
 
 </beans>

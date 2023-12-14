@@ -47,7 +47,9 @@ public class ProxyFactory extends ProxyCreatorSupport {
 	 * @param target the target object to be proxied
 	 */
 	public ProxyFactory(Object target) {
+		//target 被代理对象  在父类中包装target为SingletonTargetSource set到父类字段
 		setTarget(target);
+		//获取目标对象class的所有接口 保存到父类字段中 可查看具体流程 ClassUtils.getAllInterfaces(target)
 		setInterfaces(ClassUtils.getAllInterfaces(target));
 	}
 
@@ -94,6 +96,8 @@ public class ProxyFactory extends ProxyCreatorSupport {
 	 * @return the proxy object
 	 */
 	public Object getProxy() {
+		//主要分析 JdkDynamicProxy  假设createAopProxy返回的就是JDK动态代理
+		//直接去分析JdkDynamicAopProxy类中的 getProxy方法
 		return createAopProxy().getProxy();
 	}
 

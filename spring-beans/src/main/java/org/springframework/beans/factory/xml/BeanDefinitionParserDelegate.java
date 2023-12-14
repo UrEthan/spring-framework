@@ -440,7 +440,7 @@ public class BeanDefinitionParserDelegate {
 		}
 		//核心逻辑：将ele标签解析成对象的过程，都在这个方法完成
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
-		if (beanDefinition != null) {
+		if (beanDefinition != null) { 
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {

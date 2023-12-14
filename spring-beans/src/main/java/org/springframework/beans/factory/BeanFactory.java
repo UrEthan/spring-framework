@@ -111,7 +111,7 @@ import org.springframework.lang.Nullable;
  * @see InitializingBean#afterPropertiesSet
  * @see org.springframework.beans.factory.support.RootBeanDefinition#getInitMethodName
  * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization
- * @see DisposableBean#destroy
+ * @see DisposableBean#
  * @see org.springframework.beans.factory.support.RootBeanDefinition#getDestroyMethodName
  */
 public interface BeanFactory {

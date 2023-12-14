@@ -374,6 +374,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 
 	@Override
 	public void addAdvice(Advice advice) throws AopConfigException {
+		//获取当前已经持有的"增强 / 通知"的个数Spring AOP联盟的Advisor
 		int pos = this.advisors.size();
 		addAdvice(pos, advice);
 	}
@@ -384,7 +385,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	@Override
 	public void addAdvice(int pos, Advice advice) throws AopConfigException {
 		Assert.notNull(advice, "Advice must not be null");
-		if (advice instanceof IntroductionInfo) {
+		if (advice instanceof IntroductionInfo) {//引介增强不考虑
 			// We don't need an IntroductionAdvisor for this kind of introduction:
 			// It's fully self-describing.
 			addAdvisor(pos, new DefaultIntroductionAdvisor(advice, (IntroductionInfo) advice));
@@ -394,6 +395,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 			throw new AopConfigException("DynamicIntroductionAdvice may only be added as part of IntroductionAdvisor");
 		}
 		else {
+			//Spring中Advice对应的接口 就是 Advisor Spring使用Advisor包装一个AOP联盟的Advice实例
 			addAdvisor(pos, new DefaultPointcutAdvisor(advice));
 		}
 	}
@@ -467,6 +469,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 		MethodCacheKey cacheKey = new MethodCacheKey(method);
 		List<Object> cached = this.methodCache.get(cacheKey);
 		if (cached == null) {
+			// advisorChainFactory是创建时new的 查看 getInterceptorsAndDynamicInterceptionAdvice 方法
 			cached = this.advisorChainFactory.getInterceptorsAndDynamicInterceptionAdvice(
 					this, method, targetClass);
 			this.methodCache.put(cacheKey, cached);

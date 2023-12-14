@@ -49,21 +49,26 @@ import org.springframework.core.NativeDetector;
 public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 
 
+	/**
+	 *(AdvisedSupport config)就是 ProxyFactory 对象 ProxyFactory它是一个配置管理对象保存着创建代理对象所有的生产资料
+	 */
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
 		if (!NativeDetector.inNativeImage() &&
-				(config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config))) {
+				(config.isOptimize() || config.isProxyTargetClass() /*true 强制使用cglib动态代理*/ ||
+						hasNoUserSuppliedProxyInterfaces(config))/*说明被代理对象没有实现任何接口 没有办法使用JDK动态代理 只能使用cglib动代*/) {
 			Class<?> targetClass = config.getTargetClass();
 			if (targetClass == null) {
 				throw new AopConfigException("TargetSource cannot determine target class: " +
 						"Either an interface or a target is required for proxy creation.");
 			}
+			//条件成立: 说明targetClass是接口 或者已经是被代理过的类型了，只能使用JDK动态代理了
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}
 			return new ObjenesisCglibAopProxy(config);
 		}
-		else {
+		else {//执行到else的情况: targetClass实现了接口的情况下会走这个分支 大多数情况是这个分支 因为 面向接口编程
 			return new JdkDynamicAopProxy(config);
 		}
 	}
@@ -74,7 +79,9 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 	 * (or no proxy interfaces specified at all).
 	 */
 	private boolean hasNoUserSuppliedProxyInterfaces(AdvisedSupport config) {
+		// config.getProxiedInterfaces() 咱们创建 ProxyFactory(target) 有一行代码就是获取target接口的
 		Class<?>[] ifcs = config.getProxiedInterfaces();
+		//代理类没有实现任何接口 or ....
 		return (ifcs.length == 0 || (ifcs.length == 1 && SpringProxy.class.isAssignableFrom(ifcs[0])));
 	}
 
