@@ -38,7 +38,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
-
 /**
  * Default implementation of the {@link BeanDefinitionDocumentReader} interface that
  * reads bean definitions according to the "spring-beans" DTD and XSD format
@@ -50,8 +49,7 @@ import org.springframework.util.StringUtils;
  * element of the XML document: this class will parse all bean definition elements
  * in the XML file, regardless of the actual root element.
  *
- * @author Rod Johnson
- * @author Juergen Hoeller
+ * @author Rod Johnson * @author Juergen Hoeller
  * @author Rob Harrop
  * @author Erik Wiersma
  * @since 18.12.2003
@@ -152,6 +150,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 		//pre、post留给子类拓展的
 		preProcessXml(root);
+		//核心代码
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -187,9 +186,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 					Element ele = (Element) node;
 					//判断子标签的状态
 					if (delegate.isDefaultNamespace(ele)) {
+						//解析基本标签 <bean id="" class="" scope="" parent="" init-method=""><property name value></bean>等诸如此类
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						//自定义标签<aop:config> <mvc:annotation-driven>等有命名空间头的 spring2.0新增的之前都是<bean 开头的>
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -323,9 +324,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
-		// 解析所有bean标签的信息 解析完成之后返回bdHolder(主要保存bean标签上的别名信息)
+		//核心代码:解析所有bean标签的信息 解析完成之后封装在bdHolder中(主要保存bean标签上的别名信息)
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
-		if (bdHolder != null) {//若beanDefinition需要装饰在此进行处理，主要处理bean标签内部存在的自定义标签 如果需要的话
+		if (bdHolder != null) {
+			//若beanDefinition需要装饰在此进行处理，主要处理bean标签内部存在的自定义标签 如果需要
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.

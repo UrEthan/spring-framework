@@ -74,6 +74,7 @@ public class XmlBeanFactory extends DefaultListableBeanFactory {
 	 * @param resource the XML resource to load bean definitions from
 	 * @param parentBeanFactory parent bean factory
 	 * @throws BeansException in case of loading or parsing errors
+	 * parentBeanFactory：Spring允许在一个工程中有多个Spring工厂同时出现,这种情况非常少；例如SpringMVC中父子容器 DispatcherServlet --childFactory
 	 */
 	public XmlBeanFactory(Resource resource, BeanFactory parentBeanFactory) throws BeansException {
 		super(parentBeanFactory);

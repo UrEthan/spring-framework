@@ -428,19 +428,20 @@ public class BeanDefinitionParserDelegate {
 		String beanName = id;
 		// 条件1成立：id没值 二成立：别名列表有值
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
-			beanName = aliases.remove(0); //拿别名列表的第一个元素当作beanName
+			beanName = aliases.remove(0); //拿别名列表的第一个元素当作beanName  <bean name="a,b,c"/> 拿a出来做id 并从别名里删除它
 			if (logger.isTraceEnabled()) {
 				logger.trace("No XML 'id' specified - using '" + beanName +
 						"' as bean name and " + aliases + " as aliases");
 			}
 		}
 
-		if (containingBean == null) {
+		if (containingBean == null) {//确认beanName唯一
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 		//核心逻辑：将ele标签解析成对象的过程，都在这个方法完成
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
-		if (beanDefinition != null) { 
+		if (beanDefinition != null) {
+			//解析后获得的bd仍然没有beanName,会按照默认算法生成一个id    <bean class=""/>这种情况
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {
@@ -523,7 +524,7 @@ public class BeanDefinitionParserDelegate {
 
 		try {
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
-			//解析bean标签上定义的attribute属性 such as : lazy-init、init-method、depend-on...
+			//重点:解析bean标签上定义的attribute属性 such as : lazy-init、init-method、depend-on...
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			//bean标签中description子标签信息读取出来 保存到bd中
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
@@ -533,6 +534,13 @@ public class BeanDefinitionParserDelegate {
 			 *     <meta key="meta1" value="value1"></meta>
 			 *     <meta key="meta2" value="value2"></meta>
 			 * </bean>
+			 * 下面的方法解析 注释中的各类标签
+			 * <bean id="user" name="u1,u2,u3" class="" abstract="" >
+			 *     <property name=""/>
+			 *     <constructor-arg/>
+			 *     <lookup-method/>
+			 *     <replaced-method/>
+			 *</bean>
 			 */
 			parseMetaElements(ele, bd);
 			//解析look-up子标签 bd.methodOverrides 属性 保存需要覆盖 复写的方法 动态代理实现

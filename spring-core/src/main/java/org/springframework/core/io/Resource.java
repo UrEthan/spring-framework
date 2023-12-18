@@ -48,6 +48,11 @@ import org.springframework.lang.Nullable;
  * @see ClassPathResource
  * @see ByteArrayResource
  * @see InputStreamResource
+ * Resource接口:
+ * 目的 读取相关资源文件的内容 获取输入流
+ * 文件 -- xml txt  -> stream
+ * 网络中的资源
+ * 具体内容可以找Resource相关的实现 FileSystemResource、ClassPathResource、ServletContentResource
  */
 public interface Resource extends InputStreamSource {
 

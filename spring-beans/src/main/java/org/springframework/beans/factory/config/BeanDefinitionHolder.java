@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.support.RootBeanDefinition
  * @see org.springframework.beans.factory.support.ChildBeanDefinition
+ * 其实是BeanDefinitionHolder --> 实质上是对bd的封装(并且将常用的beanName、aliases提出来)
  */
 public class BeanDefinitionHolder implements BeanMetadataElement {
 
