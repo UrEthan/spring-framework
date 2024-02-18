@@ -1,6 +1,5 @@
 package com.learn.suns.mybatis;
 
-import com.learn.User;
 import org.springframework.beans.factory.FactoryBean;
 
 import java.lang.reflect.Method;

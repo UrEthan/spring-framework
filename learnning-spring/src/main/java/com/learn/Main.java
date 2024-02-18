@@ -1,13 +1,11 @@
 package com.learn;
 
-import com.learn.annotation.Account;
-import com.learn.annotation.AppConfig;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+import com.suns.lesson2.User;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
@@ -21,7 +19,7 @@ public class Main {
 		if (bean instanceof User){
 			System.out.println("我是实现了BeanFactory接口的 new 出来的User对象 =====》"+bean);
 			User user = (User) bean;
-			System.out.println("===>"+user.getId());
+			//System.out.println("===>"+user.getId());
 		}else if (bean instanceof FactoryBean){
 			FactoryBean bf = (UserFactoryBean) bean;
 			User object = (User)bf.getObject();
@@ -30,7 +28,7 @@ public class Main {
 		}
 		//UserService bean = applicationContext.getBean("userService", UserService.class);
 		//获取自定义标签
-		/*com.learn.User user = (com.learn.User)applicationContext.getBean("zhuanning");
+		/*suns.lesson2.User user = (suns.lesson2.User)applicationContext.getBean("zhuanning");
 		System.out.println(user.getName());
 		System.out.println(user.getPassword());
 		//按照类型获取bean 抛异常 该类有两个bd 按照类型去取不知道用哪一个

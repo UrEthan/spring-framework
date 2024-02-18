@@ -14,7 +14,7 @@ public class TestCglib {
 		 * 3.类加载
 		 * 4.额外功能 -- 增强方法
 		 */
-		Enhancer enhancer = new Enhancer();
+		/*Enhancer enhancer = new Enhancer();
 		Aa a = new Aa();
 		enhancer.setSuperclass(Aa.class);
 		enhancer.setClassLoader(TestCglib.class.getClassLoader());
@@ -30,7 +30,7 @@ public class TestCglib {
 		//调用会走到InvocationHandler方法
 		proxy.m1();
 		User user = new User();
-		String code = "12";
+		String code = "12";*/
 
 
 	}

@@ -1,6 +1,5 @@
-package com.learn.service;
+package com.ethan.suns.lesson2;
 
-import com.learn.User;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.w3c.dom.Element;

@@ -299,11 +299,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 			// Check if bean definition exists in this factory.
-			BeanFactory parentBeanFactory = getParentBeanFactory(); //解决父子容器问题
-			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
+			BeanFactory parentBeanFactory = getParentBeanFactory();
+			//解决父子容器问题 例如springMVC中 父容器存储的bean为了解决web开发 而子容器则为了Service等
+			if (parentBeanFactory != null && !containsBeanDefinition(beanName)/*表示子容器也没有该bean,则去父容器找*/) {
 				// Not found -> check parent.
 				String nameToLookup = originalBeanName(name);
-				if (parentBeanFactory instanceof AbstractBeanFactory) {
+				if (parentBeanFactory instanceof AbstractBeanFactory) {//递归调用 要追溯父容器 实例化父容器对应的bean
 					return ((AbstractBeanFactory) parentBeanFactory).doGetBean(
 							nameToLookup, requiredType, args, typeCheckOnly);
 				}
@@ -319,10 +320,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					return (T) parentBeanFactory.getBean(nameToLookup);
 				}
 			}
-
-
+			/**
+			 * typeCheckOnly = false spring会去创建对象 或者 获得这个对象返回给调用者 一般为false
+			 * 它会clearMergedBeanDefinition意味着新创建的对象不能曾经被合并过
+			 */
 			if (!typeCheckOnly) {
-				//标记这个bean是需要创建对象而不是类型检查 typeCheckOnly若为true 只会做类型检查不会创建bean
+				// typeCheckOnly=true 只会做类型检查不会创建bean
 				markBeanAsCreated(beanName);
 			}
 
@@ -335,12 +338,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				if (requiredType != null) {
 					beanCreation.tag("beanType", requiredType::toString);
 				}
-				//2.获取合并的bd信息 --> 为何bd需要合并 因为bd支持继承 重点
+				// 获取合并的bd信息 --> 为何bd需要合并 因为bd支持继承(抽象bean 和 继承抽象bean的子bean)
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
-				/**3.depends-on属性处理
+				/**3.depends-on属性处理： 意思是被dependOn依赖的组件会比该组件先注册到IOC容器中
 				 * <bean name='A' depends-on='B' ...></bean>
 				 * <bean name='B' depends-on='A' ...></bean>
 				 * Spring无法处理上述问题,发现此类问题需要抛出异常，那么Spring如何发现该异常情况呢？
@@ -369,10 +372,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						}
 					}
 				}
-
+				/**
+				 * 上述流程整合好mbd后 基于不同的scope类型 开始创建对象
+				 */
 				// Create bean instance.
 				//CASE-singleton
-				if (mbd.isSingleton()) {/**getSingleton方法 传两个参数 beanName以及匿名内部类--参数的实现即内部类createBean方法*/
+				if (mbd.isSingleton()) { /**getSingleton方法 传两个参数 beanName以及匿名内部类--参数的实现即内部类createBean方法*/
 				//第二个getSingleton方法 这个方法更倾向于创建实例并返回
 					//执行流程：第一步调用getSingleton 里面两个参数，第二个参数是匿名内部类：可以理解为实现了ObjectFactory<?>中getObject方法的一个类
 					//当执行这个匿名内部类的getObject方法则会触发调用其实现createBean方法
@@ -395,11 +400,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					 */
 					beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
-				//CASE-prototype
+				//CASE- prototype 这个scope最大的特点是不往 singletonObject 单例池中存放对象
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
-					try {//记录当前线程相关的正在创建的原型对象beanName
+					try {//记录当前线程相关的正在创建的原型对象beanName 设计标志位 异常会报错
 						beforePrototypeCreation(beanName);
 						//创建对象
 						prototypeInstance = createBean(beanName, mbd, args);
@@ -1431,7 +1436,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			RootBeanDefinition previous = null; //表示当前beanName对应的过期mbd信息
 
 			// Check with full lock now in order to enforce the same merged instance.
-			if (containingBd == null) {
+			if (containingBd == null) {//从来没有合并过 第一次肯定为null
 				mbd = this.mergedBeanDefinitions.get(beanName);
 			}
 			//条件成立，说明mbd是null 或者 过期
@@ -1481,7 +1486,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					// Deep copy with overridden values.
 					//按照父bd信息创建 mbd对象
 					mbd = new RootBeanDefinition(pbd);
-					//子bd信息覆盖mbd信息 以子bd为基准 pbd为辅
+					//TODO:合并的核心与重点 -> 子bd信息覆盖mbd信息 以子bd为基准 pbd为辅
 					mbd.overrideFrom(bd);
 				}
 
@@ -1840,13 +1845,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @param beanName the name of the bean
 	 */
 	protected void markBeanAsCreated(String beanName) {
-		if (!this.alreadyCreated.contains(beanName)) {
+		if (!this.alreadyCreated.contains(beanName)) { //首次创建 alreadyCreated肯定不包含beanName
 			synchronized (this.mergedBeanDefinitions) {
 				if (!this.alreadyCreated.contains(beanName)) {
 					// Let the bean definition get re-merged now that we're actually creating
 					// the bean... just in case some of its metadata changed in the meantime.
 					clearMergedBeanDefinition(beanName);
-					this.alreadyCreated.add(beanName);
+					this.alreadyCreated.add(beanName); //打alreadyCreated的标记
 				}
 			}
 		}
@@ -1912,11 +1917,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
 
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
-		//条件成立：说明当前请求想拿FactoryBean对象
+		//判断是不是要获取 FactoryBea工厂 对象
 		if (BeanFactoryUtils.isFactoryDereference(name)) {
 			if (beanInstance instanceof NullBean) {
 				return beanInstance;
-			}//条件成立: 说明单实例对象不是FactoryBean的实现类 但此时要拿的带&前缀 所以报错
+			}//条件成立: 说明单实例对象不是FactoryBean的实现类 用了&前缀必须是 FactoryBean 接口的实现类  不是所以报错
 			if (!(beanInstance instanceof FactoryBean)) {
 				throw new BeanIsNotAFactoryException(beanName, beanInstance.getClass());
 			}//给当前bean实例对应的bd打个标记 记录它表达的 实例是一个factoryBean

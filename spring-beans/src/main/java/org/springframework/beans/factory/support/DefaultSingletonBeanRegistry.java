@@ -81,7 +81,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/** Cache of singleton factories: bean name to ObjectFactory. 三级缓存 工厂逻辑缓存 () -> getEarlyBeanReference 普通 or 代理  */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** Cache of early singleton objects: bean name to bean instance. 二级缓存 早期对象缓存        */
+	/** Cache of early singleton objects: bean name to bean instance. 二级缓存 早期对象缓存(maybe是一个代理对象) */
 	private final Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order. */
@@ -151,6 +151,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * resolve circular references.
 	 * @param beanName the name of the bean
 	 * @param singletonFactory the factory for the singleton object
+	 * 实例化后未进行属性填充populate、初始化的非完全对象 放到 singletonFactories getEarlyBeanReference(beanName, mbd, bean) 实现了接口getObject
 	 */
 	protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
@@ -220,11 +221,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 							//条件成立: 三级缓存有数据；此处涉及到缓存升级
 							if (singletonFactory != null) {
 								//这里是触发回调 因为getObject方法的实现是 getEarlyBeanReference(beanName, mbd, bean)
-								//getEarlyBeanReference会检查是否需要创建代理
-								singletonObject = singletonFactory.getObject();
-								// 将通过工厂创建的早期对象放入 早期单例池中，然后将该bean的单例工厂从单例工厂池中删除
+								//getEarlyBeanReference会检查是否需要创建代理 回掉后获取 早期对象 maybe是一个代理
 								//singletonFactories 见名知意 工厂为了创建复杂对象，这里主要是为了解决创建AOP代理类
+								singletonObject = singletonFactory.getObject();
+								// 将通过单例工厂创建的早期对象(有可能是代理对象,取决于getEarlyBeanReference是否做了代理)放入 早期单例池中
 								this.earlySingletonObjects.put(beanName, singletonObject);
+								// 然后将该bean的单例工厂从单例工厂池中删除(已经完成任务了,减少空间占用)
 								this.singletonFactories.remove(beanName);
 							}
 						}
@@ -248,7 +250,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		synchronized (this.singletonObjects) {
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
-				//容器销毁时 会设置这个属性为true 此时就不能创建bean实例了直接抛异常
+				//singletonObject为空的情况:1.没有被创建过 2.容器销毁时 会设置这个属性为true
+				//第一种可以继续流程 若是singletonsCurrentlyInDestruction = true 此时就不能创建bean实例了应该直接抛异常
 				if (this.singletonsCurrentlyInDestruction) {
 					throw new BeanCreationNotAllowedException(beanName,
 							"Singleton bean creation not allowed while singletons of this factory are in destruction " +
@@ -256,13 +259,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				}
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
-				} /**解决循环依赖问题方法*/
-				//将当前的beanName放入到"正在创建中的单实例集合",放入成功,说明没有产生循环依赖 失败则产生循环依赖 抛异常
-				//举个例子: 构造方法参数依赖  A -> B  B -> A
-				//1.加载A 根据A的构造方法想要进行A的实例化 但发现A的构造方法有一个参数B(在这之前已经向集合里添加了{"A"})
-				//2.因为A的构造方法参数是B触发了加载B 同上构造B 发现有参数A (在这之前已经向集合里添加了{"A","B"})
-				//3.因为B的构造方法依赖A 所以触发加载A的逻辑
-				//4.再次来到getSingleton方法里 调用 beforeSingletonCreation(A);因为集合里有A 所以添加失败 抛出异常
+				}
+				/**解决循环依赖问题方法*/
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
@@ -390,6 +388,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @see #isSingletonCurrentlyInCreation
 	 */
 	protected void beforeSingletonCreation(String beanName) {
+		//将当前的beanName放入到"正在创建中的单实例集合",放入成功,说明没有产生循环依赖 失败则产生循环依赖 抛异常
+		//举个例子: 构造方法参数依赖  A -> B  B -> A
+		//1.加载A 根据A的构造方法想要进行A的实例化 但发现A的构造方法有一个参数B(在这之前已经向集合里添加了{"A"})
+		//2.因为A的构造方法参数是B触发了加载B 同上构造B 发现有参数A (在这之前已经向集合里添加了{"A","B"})
+		//3.因为B的构造方法依赖A 所以触发加载A的逻辑
+		//4.再次来到getSingleton方法里 调用 beforeSingletonCreation(A);因为集合里有A 所以添加失败 抛出异常
 		//第一次处理 前面为true 会把beanName添加到 singleCurrentlyCreation中 第二次创建该beanName second 判断为false 抛异常
 		//创建单实例之前进行校验 1.这个bean是没有被排除(即不包含在排除策略之中) 2.这个bean是正在创建中(若其他bean需要创建 发现其正在创建则不创建； 因为是单实例)
 		if (!this.inCreationCheckExclusions.contains(beanName) && !this.singletonsCurrentlyInCreation.add(beanName)) {

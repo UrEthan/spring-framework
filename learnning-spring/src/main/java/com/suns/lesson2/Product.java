@@ -1,4 +1,4 @@
-package suns.lesson2;
+package com.suns.lesson2;
 
 public class Product {
 }

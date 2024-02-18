@@ -1,6 +1,4 @@
-package suns.lesson1;
-
-import com.learn.User;
+package com.suns.lesson1;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;

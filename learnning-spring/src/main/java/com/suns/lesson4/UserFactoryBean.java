@@ -1,15 +1,13 @@
-package com.learn;
+package com.suns.lesson4;
 
 import org.springframework.beans.factory.FactoryBean;
-import com.suns.lesson2.User;
 
 public class UserFactoryBean implements FactoryBean {
 	@Override
 	public Object getObject() throws Exception {
 		User user = new User();
-		//user.setId("user1");
-		user.setName("张飞龙总");
-		user.setPassword("1212121212");
+		user.setId("lesson4");
+		user.setName("factoryBean-test");
 		return user;
 	}
 

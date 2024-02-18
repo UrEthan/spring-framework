@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
-			targetNamespace="http://www.ethan.com/schema/user"
+			targetNamespace="http://www.suns.com/schema/user"
 			elementFormDefault="qualified">
 	<!--限定自定义标签所包含的属性-->
 	<element name="user">

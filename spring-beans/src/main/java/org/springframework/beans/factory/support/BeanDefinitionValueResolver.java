@@ -109,6 +109,11 @@ class BeanDefinitionValueResolver {
 		// We must check each value to see whether it requires a runtime reference
 		// to another bean to be resolved.
 		if (value instanceof RuntimeBeanReference) {
+			/** 自定义类型注入  -->自定义类型都被封装成为RuntimeBeanReference
+			 * @Autowired
+			 * private Account account;
+			 * 若发现这个值是一个对象引用 则需要将对象(从工厂中获得已经注入的对象 bf.getBean()->doGetBean()->...递归过程) 注入到对象属性中(通过setter方法)
+			 */
 			RuntimeBeanReference ref = (RuntimeBeanReference) value;
 			return resolveReference(argName, ref);
 		}

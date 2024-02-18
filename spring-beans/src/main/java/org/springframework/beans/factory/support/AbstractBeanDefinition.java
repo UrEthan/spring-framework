@@ -294,15 +294,17 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * {@code initMethodName}, and {@code destroyMethodName} if specified
 	 * in the given bean definition.
 	 * </ul>
+	 *  parent = new 父类(parent);
+	 * parent.overrideFrom()
 	 */
 	public void overrideFrom(BeanDefinition other) {
 		if (StringUtils.hasLength(other.getBeanClassName())) {
-			setBeanClassName(other.getBeanClassName());
+			setBeanClassName(other.getBeanClassName()); //给父亲rootBeanDefinition赋值
 		}
 		if (StringUtils.hasLength(other.getScope())) {
 			setScope(other.getScope());
 		}
-		setAbstract(other.isAbstract());
+		setAbstract(other.isAbstract()); //子的非抽象赋值给 mergeBean 因为只有非抽象的bd才可以实例化
 		if (StringUtils.hasLength(other.getFactoryBeanName())) {
 			setFactoryBeanName(other.getFactoryBeanName());
 		}

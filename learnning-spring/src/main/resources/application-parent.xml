@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:suns="http://www.suns.com/schema/user"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!--lesson4-->
+	<bean id="product" class="com.suns.lesson4.Product"/>
+	<!--定义抽象bean abstract="true" 用于继承-->
+	<bean id="abstractP" abstract="true">
+		<property name="id" value="abstractId"/>
+	</bean>
+	<!--定义子bean 继承了 abstractP-->
+	<bean id="sunsP" class="com.suns.lesson4.Product" parent="abstractP">
+		<!--<property name="id" value="p"/>-->
+		<property name="name" value="子bean实现抽象bean"/>
+		<!--<lookup-method bean="product"/>-->
+	</bean>
+
+</beans>

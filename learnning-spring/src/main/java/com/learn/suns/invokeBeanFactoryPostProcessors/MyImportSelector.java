@@ -1,6 +1,6 @@
 package com.learn.suns.invokeBeanFactoryPostProcessors;
 
-import com.learn.User;
+import com.suns.lesson2.User;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;

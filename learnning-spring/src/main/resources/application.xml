@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xmlns:context="http://www.springframework.org/schema/context"
-	   xmlns:aop="http://www.springframework.org/schema/aop"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+	   xmlns:suns="http://www.suns.com/schema/user"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.suns.com/schema/user  https://www.suns.com/schema/user.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
 
+	<bean id="user" class="com.suns.lesson1.User">
+		<property name="id" value="12"/>
+		<property name="name" value="张飞"/>
+		<property name="password" value="翼徳"/>
+	</bean>
+	<!--自定义标签 通过xmlns:zhu为key在spring.schemas里面找到user.xsd约束 <zhu:user id="z" name="zhuanning" password="12121212212"/>-->
+	<suns:user id="suns" name="zhu" password="123"/>
+	<bean id="p" class="com.suns.lesson2.Product" ></bean>
+     <!--xmlns:zhu="http://www.ethan.com/schema/user"-->
 
-	<bean id="p" class="suns.lesson2.Product" ></bean>
+	<!--lesson3-->
+	<bean id="u" class="com.suns.lesson3.User" init-method="myInit" destroy-method="myDestroy" name="ttt"/>
+	<bean id="userDao" class="com.suns.lesson3.UserDaoImpl" scope="prototype"/>
+	<bean id="userService" class="com.suns.lesson3.UserServiceImpl">
+		<property name="userDao" ref="userDao"/>
+	</bean>
+	<bean id="myBeanPostProcessor" class="com.suns.lesson3.MyBeanPostProcessor"/>
+	<!--lesson4-->
+	<!--演示工厂bean使用-->
+	<bean id="lesson4" class="com.suns.lesson4.UserFactoryBean"/>
+	<!--演示父子容器的使用 父容器application-parent.xml-->
+	<bean id="user4" class="com.suns.lesson4.User">
+		<property name="id" value="u4"/>
+		<property name="name" value="柴荣"/>
+	</bean>
+
 
 </beans>

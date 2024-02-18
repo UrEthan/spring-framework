@@ -1412,18 +1412,23 @@ public class BeanDefinitionParserDelegate {
 	 * @param ele the element to parse
 	 * @param containingBd the containing bean definition (if any)
 	 * @return the resulting bean definition
+	 * 自定义标签解析核心方法
 	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
+		//Lesson2 demo中获取自定义标签配置的 namespaceUri: http://www.suns.com/schema/user
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
 		}
+		//根据URI获取处理器(spring.handlers里的映射关系) ---> MyNameSpaceHandler@1310
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		//此处MyNameSpaceHandler中早期init方法 register了自定义标签的解析器 registerBeanDefinitionParser("user",new UserBeanDefinitionParser());
+		//handler.parse(ele，...) 是通过ele中的标签获取 注册到Handler父类的解析器 从而完成解析
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 
@@ -1432,6 +1437,11 @@ public class BeanDefinitionParserDelegate {
 	 * @param ele the current element
 	 * @param originalDef the current bean definition
 	 * @return the decorated bean definition
+	 * 解析bean中有可能出现的自定义标签
+	 * <bean>
+	 *     <perprotey></perprotey>默认标签
+	 *     <zhu:text/> 自定义标签
+	 * </bean>
 	 */
 	public BeanDefinitionHolder decorateBeanDefinitionIfRequired(Element ele, BeanDefinitionHolder originalDef) {
 		return decorateBeanDefinitionIfRequired(ele, originalDef, null);

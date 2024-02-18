@@ -1,9 +1,8 @@
 package com.learn.suns.cycleDependency;
 
-import com.learn.User;
+import com.suns.lesson2.User;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
