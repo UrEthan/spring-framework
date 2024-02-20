@@ -89,7 +89,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		this();//注册内置的5个bd
-		register(componentClasses); //+1 bd
+		register(componentClasses); //+1 bd 注册入参的类到 beanDefinitionMap (配置bean的注册)
 		refresh();
 	}
 
@@ -100,8 +100,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * @param basePackages the packages to scan for component classes
 	 */
 	public AnnotationConfigApplicationContext(String... basePackages) {
-		this();
-		scan(basePackages);
+		this(); //调用无参构造器 创建reader 和 scanner
+		scan(basePackages); //扫描基础包路径下所有 有@Component以及衍生注解注释的类 创建bd 并 注册到容器
 		refresh();
 	}
 
@@ -165,6 +165,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		Assert.notEmpty(componentClasses, "At least one component class must be specified");
 		StartupStep registerComponentClass = this.getApplicationStartup().start("spring.context.component-classes.register")
 				.tag("classes", () -> Arrays.toString(componentClasses));
+		//解析Class为bd(通过new AnnotatedGenericBeanDefinition(Abd.class)) 并注册到 defaultListableBeanFactory中的 beanDefinitionMap中
+		//区别于xml方式 需要通过BeanDefinitionReader进行loader操作 疑问:注解的形式如何操作? --> AnnotatedBeanDefinitionReader（该类未纳入BeanDefinitionReader继承体系被认为是败笔）
 		this.reader.register(componentClasses);
 		registerComponentClass.end();
 	}

@@ -572,9 +572,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (mbd.isSingleton()) {
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
-		if (instanceWrapper == null) {/**通过Class拿到构造器然后通过反射创建对象*/
-		    //该方法创建出来真实的bean实例 并且将其包装到BeanWrapper实例中->便于程序操作访问对象的属性
-			//更重要的是将该实例对象属性对应的 类型转换器(内置、自定义类型转换器)也放置到wrapper中
+		if (instanceWrapper == null) {
+			/**     createBeanInstance --> 通过Class拿到构造器然后通过反射创建对象
+			 * 该方法创建出来真实的bean实例 并且将其包装到BeanWrapper实例中->便于程序操作访问对象的属性
+			 * 更重要的是将该实例对象属性对应的 类型转换器(内置、自定义类型转换器)也放置到wrapper中
+			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		//拿出真实实例 以及真实类型
@@ -990,8 +992,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
 		Object exposedObject = bean;
-		// 为了处理AOP代理的情况 即A B相互依赖且为代理对象 因为B在注入A时需要A的代理，而A的代理需要在初始化完成后才能执行,故将代理创建步骤移动至此
-		//A的代理对象被创建完成之后 后续A不会再去创建代理 因为上面的A的代理类会被放置在代理对象缓存池里
+		/** 处理需要做代理的情况:
+		 * 为了处理AOP代理的情况 即A B相互依赖且为代理对象 因为B在注入A时需要A的代理，而A的代理需要在初始化完成后才能执行,故将代理创建步骤移动至此
+		 * A的代理对象被创建完成之后 后续A不会再去创建代理 因为上面的A的代理类会被放置在代理对象缓存池里*/
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
 				exposedObject = bp.getEarlyBeanReference(exposedObject, beanName);
@@ -1877,8 +1880,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
-			//后处理器调用点: AfterInitialization初始化之后的后处理器的调用点
-			//典型应用: Spring AOP的实现 (因为此时bean已经完全初始化好了可作为代理对象)
+			/** 后处理器调用点: AfterInitialization初始化之后的后处理器的调用点
+			典型应用: Spring AOP的实现 (因为此时bean已经完全初始化好了可作为代理对象)*/
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
